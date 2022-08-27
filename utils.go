@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/sha3"
+	"github.com/dontpanicdao/caigo/types"
 )
 
 // KeccakState wraps sha3.state. In addition to the usual hash methods, it also supports

@@ -69,8 +69,8 @@ func BytesToFelt(b []byte) *Felt {
 }
 
 // BytesToFelt converts a []byte to its Felt representation.
-func SetUint64(u uint64) *Felt {
-	return &Felt{Int: new(big.Int).SetUint64(u)}
+func SetInt(i int) *Felt {
+	return &Felt{Int: new(big.Int).SetUint64(uint64(i))}
 }
 
 // String converts a Felt into its 'short string' representation.

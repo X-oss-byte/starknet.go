@@ -8,13 +8,13 @@ import (
 )
 
 const (
-	FEE_MARGIN uint64 = 115
+	FEE_MARGIN       uint64 = 115
+	EXECUTE_SELECTOR string = "__execute__"
 )
 
 var (
 	TRANSACTION_VERSION = types.StrToFelt("0")
 	TRANSACTION_PREFIX  = types.StrToFelt("invoke")
-	EXECUTE_SELECTOR    = types.StrToFelt("__execute__")
 )
 
 type Account struct {
@@ -22,7 +22,7 @@ type Account struct {
 	Address  *types.Felt
 	PublicX  *big.Int
 	PublicY  *big.Int
-	private  *big.Int
+	private  *types.Felt
 }
 
 type ExecuteDetails struct {
@@ -39,7 +39,7 @@ Instantiate a new StarkNet Account which includes structures for calling the net
 - public key pair for signature verifications
 */
 func NewAccount(private, address *types.Felt, provider types.Provider) (*Account, error) {
-	x, y, err := Curve.PrivateToPoint(private)
+	x, y, err := Curve.PrivateToPoint(private.Big())
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func NewAccount(private, address *types.Felt, provider types.Provider) (*Account
 }
 
 func (account *Account) Sign(msgHash *big.Int) (*big.Int, *big.Int, error) {
-	return Curve.Sign(msgHash, account.private)
+	return Curve.Sign(msgHash, account.private.Big())
 }
 
 /*
@@ -87,7 +87,7 @@ func (account *Account) Execute(ctx context.Context, calls []types.Transaction, 
 	return account.Provider.Invoke(ctx, *req)
 }
 
-func (account *Account) HashMultiCall(fee *types.Felt, nonce *types.Felt, calls []types.Transaction) (*big.Int, error) {
+func (account *Account) HashMultiCall(fee *types.Felt, nonce *types.Felt, calls []types.Transaction) (*types.Felt, error) {
 	chainID, err := account.Provider.ChainID(context.Background())
 	if err != nil {
 		return nil, err
@@ -155,7 +155,7 @@ func (account *Account) fmtExecute(ctx context.Context, calls []types.Transactio
 		return nil, err
 	}
 
-	r, s, err := account.Sign(hash)
+	r, s, err := account.Sign(hash.Big())
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +168,7 @@ func (account *Account) fmtExecute(ctx context.Context, calls []types.Transactio
 Formats the multicall transactions in a format which can be signed and verified by the network and OpenZeppelin account contracts
 */
 func ExecuteCalldata(nonce *types.Felt, calls []types.Transaction) (calldataArray []*types.Felt) {
-	callArray := []*types.Felt{types.SetUint64(len(calls))}
+	callArray := []*types.Felt{types.SetInt(len(calls))}
 
 	for _, tx := range calls {
 		callArray = append(callArray, tx.ContractAddress, GetSelectorFromName(tx.EntryPointSelector))
@@ -179,13 +179,13 @@ func ExecuteCalldata(nonce *types.Felt, calls []types.Transaction) (calldataArra
 			continue
 		}
 
-		callArray = append(callArray, types.SetUint64(len(calldataArray)), types.Felt.SetUint64(len(tx.Calldata)))
+		callArray = append(callArray, types.SetInt(len(calldataArray)), types.Felt.SetInt(len(tx.Calldata)))
 		for _, cd := range tx.Calldata {
 			calldataArray = append(calldataArray, cd)
 		}
 	}
 
-	callArray = append(callArray, types.SetUint64(len(calldataArray)))
+	callArray = append(callArray, types.SetInt(len(calldataArray)))
 	callArray = append(callArray, calldataArray...)
 	callArray = append(callArray, nonce)
 	return callArray

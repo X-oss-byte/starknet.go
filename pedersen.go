@@ -3,6 +3,8 @@ package caigo
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/dontpanicdao/caigo/types"
 )
 
 /*
