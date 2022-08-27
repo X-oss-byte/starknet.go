@@ -8,10 +8,13 @@ import (
 )
 
 const (
-	EXECUTE_SELECTOR    string = "__execute__"
-	TRANSACTION_PREFIX  string = "invoke"
-	TRANSACTION_VERSION int64  = 0
-	FEE_MARGIN          uint64 = 115
+	FEE_MARGIN uint64 = 115
+)
+
+var (
+	TRANSACTION_VERSION = types.StrToFelt("0")
+	TRANSACTION_PREFIX  = types.StrToFelt("invoke")
+	EXECUTE_SELECTOR    = types.StrToFelt("__execute__")
 )
 
 type Account struct {
@@ -25,7 +28,7 @@ type Account struct {
 type ExecuteDetails struct {
 	MaxFee  *types.Felt
 	Nonce   *types.Felt
-	Version *uint64 // not used currently
+	Version *types.Felt // not used currently
 }
 
 /*
@@ -35,9 +38,8 @@ Instantiate a new StarkNet Account which includes structures for calling the net
 - full provider definition
 - public key pair for signature verifications
 */
-func NewAccount(private string, address *types.Felt, provider types.Provider) (*Account, error) {
-	priv := SNValToBN(private)
-	x, y, err := Curve.PrivateToPoint(priv)
+func NewAccount(private, address *types.Felt, provider types.Provider) (*Account, error) {
+	x, y, err := Curve.PrivateToPoint(private)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +49,7 @@ func NewAccount(private string, address *types.Felt, provider types.Provider) (*
 		Address:  address,
 		PublicX:  x,
 		PublicY:  y,
-		private:  priv,
+		private:  private,
 	}, nil
 }
 
@@ -74,9 +76,7 @@ func (account *Account) Execute(ctx context.Context, calls []types.Transaction, 
 		if err != nil {
 			return nil, err
 		}
-		details.MaxFee = &types.Felt{
-			Int: new(big.Int).SetUint64((fee.OverallFee * FEE_MARGIN) / 100),
-		}
+		details.MaxFee = types.SetUint64((fee.OverallFee * FEE_MARGIN) / 100)
 	}
 
 	req, err := account.fmtExecute(ctx, calls, details)
@@ -96,9 +96,9 @@ func (account *Account) HashMultiCall(fee *types.Felt, nonce *types.Felt, calls 
 	callArray := ExecuteCalldata(nonce, calls)
 
 	// convert callArray into a BigInt array
-	callArrayBigInt := make([]*big.Int, 0)
+	callArrayBigInt := make([]*types.Felt, 0)
 	for _, call := range callArray {
-		callArrayBigInt = append(callArrayBigInt, call.Int)
+		callArrayBigInt = append(callArrayBigInt, call)
 	}
 
 	cdHash, err := Curve.ComputeHashOnElements(callArrayBigInt)
@@ -106,14 +106,14 @@ func (account *Account) HashMultiCall(fee *types.Felt, nonce *types.Felt, calls 
 		return nil, err
 	}
 
-	multiHashData := []*big.Int{
-		UTF8StrToBig(TRANSACTION_PREFIX),
-		big.NewInt(TRANSACTION_VERSION),
-		SNValToBN(account.Address.String()),
+	multiHashData := []*types.Felt{
+		TRANSACTION_PREFIX,
+		TRANSACTION_VERSION,
+		account.Address,
 		GetSelectorFromName(EXECUTE_SELECTOR),
 		cdHash,
-		fee.Int,
-		UTF8StrToBig(chainID),
+		fee,
+		types.StrToFelt(chainID),
 	}
 
 	return Curve.ComputeHashOnElements(multiHashData)
@@ -168,10 +168,10 @@ func (account *Account) fmtExecute(ctx context.Context, calls []types.Transactio
 Formats the multicall transactions in a format which can be signed and verified by the network and OpenZeppelin account contracts
 */
 func ExecuteCalldata(nonce *types.Felt, calls []types.Transaction) (calldataArray []*types.Felt) {
-	callArray := []*types.Felt{types.BigToFelt(big.NewInt(int64(len(calls))))}
+	callArray := []*types.Felt{types.SetUint64(len(calls))}
 
 	for _, tx := range calls {
-		callArray = append(callArray, types.BigToFelt(SNValToBN(tx.ContractAddress.String())), types.BigToFelt(GetSelectorFromName(tx.EntryPointSelector)))
+		callArray = append(callArray, tx.ContractAddress, GetSelectorFromName(tx.EntryPointSelector))
 
 		if len(tx.Calldata) == 0 {
 			callArray = append(callArray, types.BigToFelt(big.NewInt(0)), types.BigToFelt(big.NewInt(0)))
@@ -179,13 +179,13 @@ func ExecuteCalldata(nonce *types.Felt, calls []types.Transaction) (calldataArra
 			continue
 		}
 
-		callArray = append(callArray, types.BigToFelt(big.NewInt(int64(len(calldataArray)))), types.BigToFelt(big.NewInt(int64(len(tx.Calldata)))))
+		callArray = append(callArray, types.SetUint64(len(calldataArray)), types.Felt.SetUint64(len(tx.Calldata)))
 		for _, cd := range tx.Calldata {
-			calldataArray = append(calldataArray, types.BigToFelt(SNValToBN(cd.String())))
+			calldataArray = append(calldataArray, cd)
 		}
 	}
 
-	callArray = append(callArray, types.BigToFelt(big.NewInt(int64(len(calldataArray)))))
+	callArray = append(callArray, types.SetUint64(len(calldataArray)))
 	callArray = append(callArray, calldataArray...)
 	callArray = append(callArray, nonce)
 	return callArray

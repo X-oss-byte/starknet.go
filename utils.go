@@ -160,12 +160,12 @@ func mac(alg func() hash.Hash, k, m, buf []byte) []byte {
 	return h.Sum(buf[:0])
 }
 
-func GetSelectorFromName(funcName string) *big.Int {
+func GetSelectorFromName(funcName string) *types.Felt {
 	kec := Keccak256([]byte(funcName))
 
 	maskedKec := MaskBits(250, 8, kec)
 
-	return new(big.Int).SetBytes(maskedKec)
+	return types.BytesToFelt(maskedKec)
 }
 
 // Keccak256 calculates and returns the Keccak256 hash of the input data.
@@ -242,13 +242,4 @@ func FmtKecBytes(in *big.Int, rolen int) (buf []byte) {
 	}
 
 	return buf
-}
-
-// used in string conversions when interfacing with the APIs
-func SNValToBN(str string) *big.Int {
-	if strings.Contains(str, "0x") {
-		return HexToBN(str)
-	} else {
-		return StrToBig(str)
-	}
 }
