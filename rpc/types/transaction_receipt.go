@@ -9,11 +9,11 @@ import (
 type CommonTransactionReceipt struct {
 	TransactionHash Hash `json:"transaction_hash"`
 	// ActualFee The fee that was charged by the sequencer
-	ActualFee   string            `json:"actual_fee"`
-	Status      TransactionStatus `json:"status"`
-	BlockHash   Hash              `json:"block_hash"`
-	BlockNumber uint64            `json:"block_number"`
-	Type        TransactionType   `json:"type,omitempty"`
+	ActualFee   string          `json:"actual_fee"`
+	Status      Status          `json:"status"`
+	BlockHash   Hash            `json:"block_hash"`
+	BlockNumber uint64          `json:"block_number"`
+	Type        TransactionType `json:"type,omitempty"`
 }
 
 func (tr CommonTransactionReceipt) Hash() Hash {
@@ -55,38 +55,32 @@ func (tt TransactionType) MarshalJSON() ([]byte, error) {
 	return []byte(strconv.Quote(string(tt))), nil
 }
 
-type TransactionStatus string
+type Status string
 
 const (
-	TransactionStatus_Pending      TransactionStatus = "PENDING"
-	TransactionStatus_AcceptedOnL2 TransactionStatus = "ACCEPTED_ON_L2"
-	TransactionStatus_AcceptedOnL1 TransactionStatus = "ACCEPTED_ON_L1"
-	TransactionStatus_Rejected     TransactionStatus = "REJECTED"
+	Status_Pending      Status = "PENDING"
+	Status_AcceptedOnL2 Status = "ACCEPTED_ON_L2"
+	Status_AcceptedOnL1 Status = "ACCEPTED_ON_L1"
+	Status_Rejected     Status = "REJECTED"
 )
 
-func (ts *TransactionStatus) UnmarshalJSON(data []byte) error {
-	unquoted, err := strconv.Unquote(string(data))
-	if err != nil {
-		return err
+func stringToStatus(status *string) (Status, error) {
+	if isValidStatus(status) {
+		return Status(*status), nil
 	}
-
-	switch unquoted {
-	case "PENDING":
-		*ts = TransactionStatus_Pending
-	case "ACCEPTED_ON_L2":
-		*ts = TransactionStatus_AcceptedOnL2
-	case "ACCEPTED_ON_L1":
-		*ts = TransactionStatus_AcceptedOnL1
-	case "REJECTED":
-		*ts = TransactionStatus_Rejected
-	default:
-		return fmt.Errorf("unsupported status: %s", data)
-	}
-
-	return nil
+	return Status(*status), fmt.Errorf("invalid Status %v", status)
 }
 
-func (ts TransactionStatus) MarshalJSON() ([]byte, error) {
+func isValidStatus(status *string) bool {
+	switch *status {
+	case "PENDING", "ACCEPTED_ON_L2", "ACCEPTED_ON_L1", "REJECTED":
+		return true
+	default:
+		return false
+	}
+}
+
+func (ts Status) MarshalJSON() ([]byte, error) {
 	return []byte(strconv.Quote(string(ts))), nil
 }
 

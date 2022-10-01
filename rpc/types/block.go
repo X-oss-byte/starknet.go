@@ -3,7 +3,6 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -36,44 +35,9 @@ func (b BlockID) MarshalJSON() ([]byte, error) {
 	return json.Marshal((Alias)(b))
 }
 
-type BlockStatus string
-
-const (
-	BlockStatus_Pending      BlockStatus = "PENDING"
-	BlockStatus_AcceptedOnL2 BlockStatus = "ACCEPTED_ON_L2"
-	BlockStatus_AcceptedOnL1 BlockStatus = "ACCEPTED_ON_L1"
-	BlockStatus_Rejected     BlockStatus = "REJECTED"
-)
-
-func (bs *BlockStatus) UnmarshalJSON(data []byte) error {
-	unquoted, err := strconv.Unquote(string(data))
-	if err != nil {
-		return err
-	}
-
-	switch unquoted {
-	case "PENDING":
-		*bs = BlockStatus_Pending
-	case "ACCEPTED_ON_L2":
-		*bs = BlockStatus_AcceptedOnL2
-	case "ACCEPTED_ON_L1":
-		*bs = BlockStatus_AcceptedOnL1
-	case "REJECTED":
-		*bs = BlockStatus_Rejected
-	default:
-		return fmt.Errorf("unsupported status: %s", data)
-	}
-
-	return nil
-}
-
-func (bs BlockStatus) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.Quote(string(bs))), nil
-}
-
 type Block struct {
 	BlockHeader
-	Status BlockStatus `json:"status"`
+	Status Status `json:"status"`
 	// Transactions The hashes of the transactions included in this block
 	Transactions Transactions `json:"transactions"`
 }

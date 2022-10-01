@@ -58,23 +58,23 @@ func TestBlockID_Marshal(t *testing.T) {
 func TestBlockStatus(t *testing.T) {
 	for _, tc := range []struct {
 		status string
-		want   BlockStatus
+		want   Status
 	}{{
 		status: "PENDING",
-		want:   BlockStatus_Pending,
+		want:   Status_Pending,
 	}, {
 		status: "ACCEPTED_ON_L2",
-		want:   BlockStatus_AcceptedOnL2,
+		want:   Status_AcceptedOnL2,
 	}, {
 		status: "ACCEPTED_ON_L1",
-		want:   BlockStatus_AcceptedOnL1,
+		want:   Status_AcceptedOnL1,
 	}, {
 		status: "REJECTED",
-		want:   BlockStatus_Rejected,
+		want:   Status_Rejected,
 	}} {
-		tx := new(BlockStatus)
-		if err := json.Unmarshal([]byte(tc.status), tx); err != nil {
-			t.Errorf("unmarshalling status want: %s", err)
+		_, err := stringToStatus(&tc.status)
+		if err != nil {
+			t.Errorf("%s", err)
 		}
 	}
 }
