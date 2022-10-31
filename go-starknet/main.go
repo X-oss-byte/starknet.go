@@ -27,6 +27,7 @@ func main() {
 			&settingsCommand,
 			&versionCommand,
 			&workspaceCommand,
+			&classHashAtCommand,
 		},
 	}
 
