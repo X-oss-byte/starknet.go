@@ -30,7 +30,7 @@ func (provider *Provider) AddInvokeTransaction(ctx context.Context, broadcastedI
 		}
 		return &output, nil
 	}
-	return nil, errors.New("invalid invoke type")
+	return nil, errors.New("invalid broadcastedInvoke type")
 }
 
 // AddDeclareTransaction submits a new class declaration transaction.
