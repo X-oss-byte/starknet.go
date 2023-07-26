@@ -1,0 +1,28 @@
+{
+    "transaction_hash": "0x21b0cdf22ce5e48b98d414b50672b0c6ae23340dbddb1b90efb9c1cf96bbaf7",
+    "version": "0x1",
+    "max_fee": "0x2abf0a4df000",
+    "signature": [
+      "0x48d3f05093a454e1ff95ca291cb98775555dcd94e1bce0f3c74f4317063397a",
+      "0x17c8c9261ad54cc012d86f03b1978f29d126e03919e51077c141d90ebc04b70",
+      "0x2c2b8f559e1221468140ad7b2352b1a5be32660d0bf1a3ae3a054a4ec5254e4",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0",
+      "0x0"
+    ],
+    "nonce": "0x0",
+    "contract_address": "0x2e764e25401eed74c116c72ef7f1ae8ec8206ebe9215e512819f15369277fb8",
+    "contract_address_salt": "0x1903e017fc97ba443ea2c4140fb397ec1ffd11d30b96d1614e86df010f62ec",
+    "class_hash": "0x3131fa018d520a037686ce3efddeab8f28895662f019ca3ca18a626650f7d1e",
+    "constructor_calldata": [
+      "0x5aa23d5bb71ddaa783da7ea79d405315bafa7cf0387a74f4593578c3e9e6570",
+      "0x2dd76e7ad84dbed81c314ffe5e7a7cacfb8f4836f01af4e913f275f89a3de1a",
+      "0x1",
+      "0x1903e017fc97ba443ea2c4140fb397ec1ffd11d30b96d1614e86df010f62ec"
+    ],
+    "type": "DEPLOY_ACCOUNT"
+  }

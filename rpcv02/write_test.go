@@ -59,3 +59,52 @@ func TestDeclareTransaction(t *testing.T) {
 
 	}
 }
+
+// TestDeployAccountTransaction tests starknet_addDeployAccountTransaction
+func TestDeployAccountTransaction(t *testing.T) {
+
+	testConfig := beforeEach(t)
+
+	type testSetType struct {
+		TransactionHash *felt.Felt
+		ContractAddress *felt.Felt
+		ExpectedError   string
+	}
+	testSet := map[string][]testSetType{
+		"devnet":  {},
+		"mainnet": {},
+		"mock":    {},
+		"testnet": {{
+			TransactionHash: &felt.Zero, // todo (correct)
+			ContractAddress: &felt.Zero, // todo (correct)
+			ExpectedError:   "todo()",
+		}},
+	}[testEnv]
+
+	for _, test := range testSet {
+
+		deployAccountJSON, err := os.ReadFile("./tests/deployAccountGoerli.json")
+		if err != nil {
+			t.Fatal("should be able to read file", err)
+		}
+
+		var deployAccountTx BroadcastedDeployAccountTransaction
+		err = json.Unmarshal(deployAccountJSON, &deployAccountTx)
+		require.Nil(t, err, "Error unmarshalling decalreTx")
+
+		spy := NewSpy(testConfig.provider.c)
+		testConfig.provider.c = spy
+
+		dec, err := testConfig.provider.AddDeployAccountTransaction(context.Background(), deployAccountTx)
+		if err != nil {
+			require.Equal(t, err.Error(), test.ExpectedError)
+			continue
+		}
+		if dec.TransactionHash != test.TransactionHash {
+			t.Fatalf("transactionHash does not match expected, current: %s", dec.TransactionHash)
+		}
+		if dec.ContractAddress != test.TransactionHash {
+			t.Fatalf("ContractAddress does not match expected, current: %s", dec.ContractAddress)
+		}
+	}
+}
