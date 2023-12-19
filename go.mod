@@ -9,7 +9,7 @@ require (
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/test-go/testify v1.1.4
 	github.com/urfave/cli/v2 v2.10.2
-	golang.org/x/crypto v0.2.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
@@ -38,5 +38,5 @@ require (
 require (
 	github.com/google/go-cmp v0.5.7
 	github.com/google/go-querystring v1.1.0
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 )
